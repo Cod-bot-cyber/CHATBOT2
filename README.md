@@ -69,11 +69,14 @@ Chatbot-Project/
 	•	Dynamic buttons (View Courses, Suggest Courses, Enroll)
 	•	Basic interactivity working
 	•	Black theme + custom styling
+    •   pleasing background 
 (improvement possible: modern UI components, typing indicator, better button styles, mobile responsive design)
 	4.	User Experience (UX) → ✅ ~70% complete
 	•	Roll number based conversation working
 	•	Menu-driven quick replies
 	•	Basic course advising flow done
+    •   toggle dark mode / light mode
+	•   manipulate predefined data
 (improvement possible: proactive suggestions, smarter FAQ, better error messages, voice support, analytics)
 
 ⸻
