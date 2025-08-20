@@ -48,5 +48,3 @@ Chatbot-Project/
 	3.	Chatbot will show your details and give menu options:
 	•	View Courses → See enrolled courses
 	•	Suggest Courses → Get course
-
-#project complet
