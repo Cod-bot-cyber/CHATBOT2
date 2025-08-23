@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Chatbot</title>
+  <style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      background-color:black;
+      color:white;
+      padding:20px;
+      transition: all 0.3s ease;
+      align-items:center;
+    }
+
+    body.light-mode {
+      background-color:#f0f0f0;
+      color:#000;
+    }
+    body.light-mode .chat-section {
+      background: rgba(255,255,255,0.95);
+      border-color:#4c6ef5;
+      box-shadow: 0 0 15px #4c6ef5, 0 0 30px #a0c4ff, 0 0 45px #a0c4ff;
+    }
+    body.light-mode .chat-input input {
+      background:#eee;
+      color:#000;
+    }
+    body.light-mode .chat-input button {
+      background:#4c6ef5;
+      color:#fff;
+    }
+    body.light-mode #modeToggle {
+      background:#4c6ef5;
+      color:white;
+    }
+
+    .intro h1 {
+      font-family: Arial, sans-serif; 
+      font-size:3rem;
+      font-weight:600;
+      text-align:center;
+      color:white;
+      margin-bottom: 30px;
+      animation: glowPulse 2s infinite alternate;
+    }
+
+    @keyframes glowPulse {
+      0% { text-shadow: 0 0 5px #00f, 0 0 10px #0ff; }
+      50% { text-shadow: 0 0 15px #0ff, 0 0 25px #00f; }
+      100% { text-shadow: 0 0 5px #00f, 0 0 10px #0ff; }
+    }
+
+    .chat-section {
+      position: relative;
+      margin:20px auto 0 auto;
+      display:flex;
+      flex-direction:column;
+      max-width:900px;
+      width:100%;
+      height:75vh;
+      border-radius:20px;
+      overflow:hidden;
+      background: rgba(0,0,0,0.85);
+      z-index:1;
+      border: 5px solid #00f;
+      box-shadow: 0 0 15px #00f, 0 0 30px #0ff, 0 0 45px #0ff;
+      animation: neonBorder 3s linear infinite alternate ;
+      transition: all 0.3s ease;
+    }
+
+    @keyframes neonBorder {
+      0% { box-shadow: 0 0 10px #00f, 0 0 20px #0ff, 0 0 30px #00f, 0 0 40px #0ff; }
+      50% { box-shadow: 0 0 15px #0ff, 0 0 25px #00f, 0 0 35px #0ff, 0 0 50px #00f; }
+      100% { box-shadow: 0 0 10px #00f, 0 0 20px #0ff, 0 0 30px #00f, 0 0 40px #0ff; }
+    }
+
+    .chat-messages {
+      flex:1;
+      padding:20px;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      position: relative;
+      z-index:2;
+    }
+
+    .message {
+      max-width:70%;
+      padding:12px 18px;
+      border-radius:18px;
+      word-wrap:break-word;
+      opacity:0;
+      transform: translateY(20px);
+      animation: slideUp 0.3s forwards;
+    }
+
+    .user-message {
+      background:#4c6ef5;
+      color:white;
+      align-self:flex-end;
+      border-bottom-right-radius:5px;
+    }
+
+    .bot-message {
+      background:#e0e0e0;
+      color:black;
+      align-self:flex-start;
+      border-bottom-left-radius:5px;
+    }
+
+    @keyframes slideUp {
+      to { opacity:1; transform: translateY(0); }
+    }
+
+    .chat-input { display:flex; border-top:1px solid rgba(255,255,255,0.2); }
+    .chat-input input { flex:1; padding:14px; outline:none; border:none; background:rgba(0,0,0,0.6); color:white; border-radius:0; transition: all 0.3s ease; }
+    .chat-input button { padding:14px 22px; border:none; cursor:pointer; background:#4c6ef5; color:white; border-radius:0; transition: all 0.3s ease; }
+    .chat-input button:hover { background:#3b5bdb; }
+
+    #modeToggle {
+      position:absolute; top:20px; right:20px;
+      padding:8px 12px; border:none; border-radius:5px; cursor:pointer;
+      background:#4c6ef5; color:white; transition: all 0.3s ease;
+    }
+    #modeToggle:hover { background:#3b5bdb; }
+  </style>
+</head>
+<body class="dark-mode">
+
+  <div class="intro">
+    <h1 id="heading">Chat Assistant</h1>
+  </div>
+
+  <button id="modeToggle">🌙 Dark/Light</button>
+
+  <section class="chat-section">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Type a message...">
+      <button id="sendBtn">Send</button>
+    </div>
+  </section>
+
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+  const input = document.getElementById("messageInput");
+  const messages = document.getElementById("chatMessages");
+  const sendBtn = document.getElementById("sendBtn");
+  const toggleBtn = document.getElementById("modeToggle");
+  const body = document.body;
+
+  toggleBtn.addEventListener("click", ()=>{
+    body.classList.toggle("dark-mode");
+    body.classList.toggle("light-mode");
+  });
+
+  appendBotMessage("Hello there!");
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if(text==="") return;
+
+    appendUserMessage(text);
+    input.value = "";
+
+    const typingMsg = document.createElement("div");
+    typingMsg.classList.add("message","bot-message");
+    typingMsg.style.fontStyle = "italic";
+    typingMsg.textContent = "Bot is typing...";
+    messages.appendChild(typingMsg);
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+      const response = await fetch("/ask", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({question:text})
+      });
+      const data = await response.json();
+
+      typingMsg.remove();
+      appendBotMessage(data.answer);
+
+    } catch(err) {
+      typingMsg.remove();
+      appendBotMessage("⚠️ Error connecting to server.");
+    }
+  }
+
+  function appendUserMessage(text){
+    const userMsg = document.createElement("div");
+    userMsg.classList.add("message","user-message");
+    userMsg.innerText = text;
+    messages.appendChild(userMsg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function appendBotMessage(text){
+    const botMsg = document.createElement("div");
+    botMsg.classList.add("message","bot-message");
+    botMsg.innerHTML = text.replace(/\n/g,"<br>");
+    messages.appendChild(botMsg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keydown", function(e){
+    if(e.key==="Enter"){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+});
+  </script>
+</body>
+</html>
